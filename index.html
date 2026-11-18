@@ -69,6 +69,7 @@ details.card[open] summary{margin-bottom:8px}
     <button data-v="home" class="on">課程</button>
     <button data-v="patterns">句型</button>
     <button data-v="stories">對話劇場</button>
+    <button data-v="reactions">口語反應</button>
     <button data-v="tones">聲調</button>
     <button data-v="listen">聽力測驗</button>
     <button data-v="speak">跟讀</button>
@@ -80,6 +81,7 @@ details.card[open] summary{margin-bottom:8px}
 <script src="lessons.js"></script>
 <script src="patterns.js"></script>
 <script src="stories.js"></script>
+<script src="content-muse.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -159,6 +161,14 @@ const views = {
     <div class="grid">${S.map((s,i)=>`<div class="card lesson-card" data-story="${i}">
       <span class="tag">${esc(s.style)}</span><div class="hz" style="margin-top:6px">${esc(s.title)}</div>
       <div class="muted">${esc(s.scene)}</div><div class="muted">${s.lines.length} 句台詞</div></div>`).join('')}</div>`;
+  },
+  reactions(){
+    const R = window.REACTIONS || [];
+    return voiceBanner() + `<h2>口語反應</h2><p class="muted">聊天時最常用的短回應。先記住這些，就能自然地接話。</p>
+    <div class="card">${R.map(r => `<div class="item">${playBtn(r.hanzi)}<div class="txt">
+      <div class="row"><span class="hz" style="font-size:19px">${esc(r.hanzi)}</span><span class="jp">${esc(r.jyutping)}</span></div>
+      <div>${esc(r.mandarin)}</div>${r.note ? `<div class="muted">💡 ${esc(r.note)}</div>` : ''}</div>
+      <button class="btn icon" title="慢速" data-say="${esc(r.hanzi)}" data-rate="0.55">🐢</button></div>`).join('')}</div>`;
   },
   story(i){
     const s = STORIES[i];
@@ -256,7 +266,8 @@ let qStats = {right:0,total:0}, qSrc = 'vocab';
 const allSentences = () => [
   ...L.flatMap(l => l.dialogue),
   ...(window.PATTERNS || []).flatMap(p => p.examples),
-  ...(window.STORIES || []).flatMap(s => s.lines)
+  ...(window.STORIES || []).flatMap(s => s.lines),
+  ...(window.REACTIONS || [])
 ].filter(x => x.hanzi && x.mandarin);
 function newQuiz(){
   const pool = qSrc === 'sentence' ? allSentences() : allVocab;
