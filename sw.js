@@ -1,6 +1,6 @@
 // 離線快取：先用網路拿最新版，沒網路時用快取
-const CACHE = 'hk-cantonese-v1';
-const FILES = ['./', './index.html', './lessons.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
+const CACHE = 'hk-cantonese-v2';
+const FILES = ['./', './index.html', './lessons.js', './patterns.js', './stories.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

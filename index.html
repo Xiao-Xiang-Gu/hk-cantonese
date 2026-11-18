@@ -49,6 +49,15 @@ h2{font-size:20px;margin:0 0 4px}h3{font-size:16px;margin:16px 0 8px}
 .tone-bar{height:44px;position:relative;margin:6px 0}
 select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
 label.sw{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.line{cursor:pointer;border-radius:10px;transition:background .15s}
+.line.playing{background:var(--accent-soft)}
+.hide-jp .line .jp,.hide-zh .line .zh{visibility:hidden}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.toggles .btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);margin-right:6px}
+details.card summary{cursor:pointer;list-style:none}
+details.card summary::-webkit-details-marker{display:none}
+details.card[open] summary{margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -58,6 +67,8 @@ label.sw{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--mute
   </div>
   <nav id="nav">
     <button data-v="home" class="on">課程</button>
+    <button data-v="patterns">句型</button>
+    <button data-v="stories">對話劇場</button>
     <button data-v="tones">聲調</button>
     <button data-v="listen">聽力測驗</button>
     <button data-v="speak">跟讀</button>
@@ -67,6 +78,8 @@ label.sw{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--mute
 <main class="wrap" id="app"></main>
 
 <script src="lessons.js"></script>
+<script src="patterns.js"></script>
+<script src="stories.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const app = $('#app');
@@ -128,6 +141,38 @@ const views = {
       <div class="row" style="margin-top:10px"><button class="btn primary" id="playAll">▶ 播放整段對話</button></div></div>
     ${l.tips?.length?`<h3>文法小提示</h3>${l.tips.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}`:''}`;
   },
+  patterns(){
+    const P = window.PATTERNS || [];
+    const groups = [...new Set(P.map(p => p.group))];
+    return voiceBanner() + `<h2>常用句型</h2><p class="muted">聽懂整句話的關鍵：句尾語氣詞和連接詞。點開每個句型看說明，例句都可以播放。</p>
+    ${groups.map(g => `<h3>${esc(g)}</h3>${P.filter(p => p.group === g).map(p => `<details class="card">
+      <summary><div class="row"><span class="hz" style="font-size:19px">${esc(p.title)}</span><span class="muted" style="flex:1">${esc(p.meaning)}</span><span class="muted">▾</span></div></summary>
+      <div class="tip">${esc(p.explain)}</div>
+      ${p.examples.map(e => `<div class="item">${playBtn(e.hanzi)}<div class="txt"><div style="font-size:18px">${esc(e.hanzi)}</div>
+        <div class="jp">${esc(e.jyutping)}</div><div class="muted">${esc(e.mandarin)}</div></div>
+        <button class="btn icon" title="慢速" data-say="${esc(e.hanzi)}" data-rate="0.55">🐢</button></div>`).join('')}
+    </details>`).join('')}`).join('')}`;
+  },
+  stories(){
+    const S = window.STORIES || [];
+    return voiceBanner() + `<h2>對話劇場</h2><p class="muted">原創短劇，像看港劇、卡通一樣練聽力。建議先隱藏粵拼和翻譯只用聽的，聽不懂再打開。</p>
+    <div class="grid">${S.map((s,i)=>`<div class="card lesson-card" data-story="${i}">
+      <span class="tag">${esc(s.style)}</span><div class="hz" style="margin-top:6px">${esc(s.title)}</div>
+      <div class="muted">${esc(s.scene)}</div><div class="muted">${s.lines.length} 句台詞</div></div>`).join('')}</div>`;
+  },
+  story(i){
+    const s = STORIES[i];
+    const pref = store.get('storyView', {jp: true, zh: true});
+    return `<button class="btn" data-go="stories">← 返回對話劇場</button>
+    <h2 style="margin-top:14px">${esc(s.title)}</h2><p class="muted"><span class="tag">${esc(s.style)}</span>${esc(s.scene)}</p>
+    <div class="toggles"><button class="btn primary" id="playStory">▶ 播放全劇</button>
+      <button class="btn${pref.jp?' on':''}" data-toggle="jp">粵拼</button><button class="btn${pref.zh?' on':''}" data-toggle="zh">翻譯</button></div>
+    <div class="card ${pref.jp?'':'hide-jp'} ${pref.zh?'':'hide-zh'}" id="storyLines">${s.lines.map((l,k)=>`<div class="item line" data-line="${k}">
+      <div class="txt"><div class="muted">${esc(l.speaker)}</div><div style="font-size:19px">${esc(l.hanzi)}</div>
+      <div class="jp">${esc(l.jyutping)}</div><div class="muted zh">${esc(l.mandarin)}</div></div></div>`).join('')}</div>
+    <p class="muted">點任何一句可以單獨播放。</p>
+    ${s.notes?.length?`<h3>重點解說</h3>${s.notes.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}`:''}`;
+  },
   tones(){
     const T = window.TONES || [];
     const y = c => 40 - (parseInt(c,10) - 1) * 9; // 1~5 → 高度
@@ -142,13 +187,15 @@ const views = {
     <div class="card" id="pair"></div>`;
   },
   listen(){
-    return voiceBanner() + `<h2>聽力測驗</h2><p class="muted">聽發音，選出正確的意思。</p><div class="card" id="quiz"></div>`;
+    return voiceBanner() + `<h2>聽力測驗</h2><p class="muted">聽發音，選出正確的意思。</p>
+    <label class="sw" style="margin-bottom:10px">題目 <select id="qSrc"><option value="vocab">詞句</option><option value="sentence">整句（課程對話＋句型例句＋劇場）</option></select></label>
+    <div class="card" id="quiz"></div>`;
   },
   speak(){
     const ok = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
     return voiceBanner() + `<h2>跟讀練習</h2><p class="muted">先聽，再按「開始說」用粵語唸出來，系統會比對你說的字。</p>
     ${ok?'':'<div class="banner">這個瀏覽器不支援語音辨識。請用電腦版 Chrome 開啟（需要連網、允許麥克風）。</div>'}
-    <div class="card"><label class="sw">練習範圍 <select id="spSrc"><option value="vocab">詞句</option><option value="dialogue">對話句</option></select></label>
+    <div class="card"><label class="sw">練習範圍 <select id="spSrc"><option value="vocab">詞句</option><option value="dialogue">整句</option></select></label>
     <div id="spBox" style="margin-top:12px"></div></div>`;
   },
   flash(){
@@ -157,9 +204,11 @@ const views = {
 };
 
 function render(arg){
-  app.innerHTML = cur === 'lesson' ? views.lesson(arg) : views[cur]();
-  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === cur || (cur==='lesson' && b.dataset.v==='home')));
-  if (cur === 'listen') newQuiz();
+  app.innerHTML = (cur === 'lesson' || cur === 'story') ? views[cur](arg) : views[cur]();
+  const parent = {lesson: 'home', story: 'stories'}[cur] || cur;
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === parent));
+  if (cur === 'listen'){ const q = $('#qSrc'); q.value = qSrc; q.onchange = () => { qSrc = q.value; newQuiz(); }; newQuiz(); }
+  if (cur === 'story') initStory(arg);
   if (cur === 'speak') initSpeak();
   if (cur === 'flash') nextCard();
   if (cur === 'lesson'){ $('#playAll').onclick = () => playSeq(L[arg].dialogue.map(d => d.hanzi)); }
@@ -174,16 +223,46 @@ function playSeq(list, rate){
 $('#nav').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); };
 app.addEventListener('click', e => {
   const c = e.target.closest('[data-lesson]'); if (c) return go('lesson', +c.dataset.lesson);
+  const st = e.target.closest('[data-story]'); if (st) return go('story', +st.dataset.story);
   const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
 });
 
+// ---------- 對話劇場 ----------
+function speakLine(text, onend){
+  const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-HK'; if (yueVoice) u.voice = yueVoice;
+  u.rate = parseFloat($('#rate').value); if (onend) { u.onend = onend; u.onerror = onend; }
+  speechSynthesis.speak(u);
+}
+function initStory(i){
+  const s = STORIES[i], box = $('#storyLines');
+  const mark = k => box.querySelectorAll('.line').forEach((el, j) => el.classList.toggle('playing', j === k));
+  box.onclick = e => { const l = e.target.closest('[data-line]'); if (!l) return; speechSynthesis.cancel(); const k = +l.dataset.line; mark(k); speakLine(s.lines[k].hanzi, () => mark(-1)); };
+  $('#playStory').onclick = () => {
+    speechSynthesis.cancel();
+    let k = 0;
+    const next = () => { if (cur !== 'story' || k >= s.lines.length) return mark(-1); mark(k); box.children[k].scrollIntoView({block:'nearest', behavior:'smooth'}); speakLine(s.lines[k++].hanzi, () => setTimeout(next, 350)); };
+    setTimeout(next, 100);
+  };
+  document.querySelectorAll('[data-toggle]').forEach(b => b.onclick = () => {
+    const pref = store.get('storyView', {jp: true, zh: true}); const key = b.dataset.toggle;
+    pref[key] = !pref[key]; store.set('storyView', pref);
+    b.classList.toggle('on', pref[key]); box.classList.toggle('hide-' + key, !pref[key]);
+  });
+}
+
 // ---------- 聽力測驗 ----------
 const shuffle = a => a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
-let qStats = {right:0,total:0};
+let qStats = {right:0,total:0}, qSrc = 'vocab';
+const allSentences = () => [
+  ...L.flatMap(l => l.dialogue),
+  ...(window.PATTERNS || []).flatMap(p => p.examples),
+  ...(window.STORIES || []).flatMap(s => s.lines)
+].filter(x => x.hanzi && x.mandarin);
 function newQuiz(){
-  const box = $('#quiz'); if (!box || allVocab.length < 4) return;
-  const ans = allVocab[Math.floor(Math.random()*allVocab.length)];
-  const opts = shuffle([ans, ...shuffle(allVocab.filter(v => v.mandarin !== ans.mandarin)).slice(0,3)]);
+  const pool = qSrc === 'sentence' ? allSentences() : allVocab;
+  const box = $('#quiz'); if (!box || pool.length < 4) return;
+  const ans = pool[Math.floor(Math.random()*pool.length)];
+  const opts = shuffle([ans, ...shuffle(pool.filter(v => v.mandarin !== ans.mandarin)).slice(0,3)]);
   box.innerHTML = `<div class="row"><button class="btn primary" data-say="${esc(ans.hanzi)}">🔊 播放</button>
     <button class="btn" data-say="${esc(ans.hanzi)}" data-rate="0.55">🐢 慢速</button>
     <span class="muted" style="margin-left:auto">答對 ${qStats.right} / ${qStats.total}</span></div>
@@ -240,7 +319,7 @@ let spItem = null;
 function initSpeak(){ $('#spSrc').onchange = nextSpeak; nextSpeak(); }
 function nextSpeak(){
   const src = $('#spSrc').value;
-  const pool = src === 'vocab' ? allVocab : L.flatMap(l => l.dialogue);
+  const pool = src === 'vocab' ? allVocab : allSentences();
   spItem = pool[Math.floor(Math.random()*pool.length)];
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   $('#spBox').innerHTML = `<div class="flash" style="padding:16px"><div class="hz">${esc(spItem.hanzi)}</div><div class="jp">${esc(spItem.jyutping)}</div><div class="muted">${esc(spItem.mandarin)}</div></div>
