@@ -51,6 +51,13 @@ select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--lin
 label.sw{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
 .line{cursor:pointer;border-radius:10px;transition:background .15s}
 .line.playing{background:var(--accent-soft)}
+.lk{font-size:24px;line-height:1.3;display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 2px}
+.lk a.rb{display:inline-flex;flex-direction:column;align-items:center;min-width:2.4em;color:inherit;text-decoration:none;border-radius:6px;padding:2px 1px}
+.lk a.rb small{font-size:11px;color:var(--accent);font-family:ui-monospace,Consolas,monospace}
+.lk a.rb:hover{background:var(--accent-soft)}
+.line.turn{background:color-mix(in srgb, var(--ok) 15%, transparent)}
+.your-turn{display:none;margin-left:8px;color:var(--ok);font-weight:600}
+.line.turn .your-turn{display:inline}
 .hide-jp .line .jp,.hide-zh .line .zh{visibility:hidden}
 .toggles{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .toggles .btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
@@ -63,13 +70,14 @@ details.card[open] summary{margin-bottom:8px}
 <body>
 <header><div class="wrap">
   <div class="top"><h1>粵語口語練習 🗣️</h1>
-    <label class="sw">語速 <select id="rate"><option value="0.6">慢</option><option value="0.85" selected>中</option><option value="1">正常</option></select></label>
+    <label class="sw">語速 <select id="rate"><option value="0.6">慢</option><option value="0.75">稍慢</option><option value="0.85">中</option><option value="1">正常</option><option value="1.15">母語速度</option></select></label>
   </div>
   <nav id="nav">
     <button data-v="home" class="on">課程</button>
     <button data-v="patterns">句型</button>
     <button data-v="stories">對話劇場</button>
     <button data-v="reactions">口語反應</button>
+    <button data-v="lookup">查字幕</button>
     <button data-v="tones">聲調</button>
     <button data-v="listen">聽力測驗</button>
     <button data-v="speak">跟讀</button>
@@ -82,39 +90,65 @@ details.card[open] summary{margin-bottom:8px}
 <script src="patterns.js"></script>
 <script src="stories.js"></script>
 <script src="content-muse.js"></script>
+<script src="audio-map.js"></script>
 <script>
 const $ = s => document.querySelector(s);
 const app = $('#app');
 const L = window.LESSONS || [];
-const allVocab = L.flatMap(l => l.vocab.map(v => ({...v, lesson: l.title})));
+// 不同課重複出現的詞只保留一次
+const allVocab = (() => { const seen = new Set(); return L.flatMap(l => l.vocab.map(v => ({...v, lesson: l.title}))).filter(v => !seen.has(v.hanzi) && seen.add(v.hanzi)); })();
 const store = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-// ---------- 發音 (TTS) ----------
-let yueVoice = null;
+// ---------- 發音 ----------
+// 有預先錄製的神經網路語音檔就播音檔（語速一定有效）；沒有的句子（例如查字幕）才用裝置內建語音
+const AUDIO_MAP = window.AUDIO_MAP || {};
+let yueVoice = null, curAudio = null, playToken = 0;
 function pickVoice(){
   const vs = speechSynthesis.getVoices();
   yueVoice = vs.find(v => /zh[-_]HK|yue/i.test(v.lang)) || vs.find(v => /Cantonese|粵|廣東|Hong Kong/i.test(v.name)) || null;
 }
-if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = () => { pickVoice(); if (cur === 'home') render(); }; }
-function say(text, rate){
-  if (!('speechSynthesis' in window)) return;
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text.replace(/[？！，。、]/g, m => m === '，' || m === '、' ? '，' : m));
+if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+const getRate = () => parseFloat(store.get('rate', '0.85'));
+function stopAll(){
+  playToken++;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  if (curAudio){ curAudio.pause(); curAudio = null; }
+}
+function ttsSpeak(text, rate, done){
+  if (!('speechSynthesis' in window)) return done();
+  const u = new SpeechSynthesisUtterance(text);
   u.lang = 'zh-HK'; if (yueVoice) u.voice = yueVoice;
-  u.rate = rate || parseFloat($('#rate').value);
+  u.rate = rate; u.onend = u.onerror = done;
   speechSynthesis.speak(u);
 }
+// 播放一句，回傳 Promise（播完才 resolve），可用來接續播放整段對話
+function playText(text, rate){
+  rate = rate || getRate();
+  return new Promise(resolve => {
+    const file = AUDIO_MAP[text];
+    if (!file) return ttsSpeak(text, rate, resolve);
+    const a = new Audio('audio/' + file);
+    a.playbackRate = rate; a.preservesPitch = true; a.webkitPreservesPitch = true;
+    a.onended = a.onerror = () => resolve();
+    curAudio = a;
+    a.play().catch(() => ttsSpeak(text, rate, resolve));
+  });
+}
+function say(text, rate){ stopAll(); return playText(text, rate); }
+const hasClip = t => !!AUDIO_MAP[t];
 const playBtn = (t, extra='') => `<button class="btn icon" title="播放" data-say="${esc(t)}" ${extra}>🔊</button>`;
 document.addEventListener('click', e => {
-  const b = e.target.closest('[data-say]'); if (b) say(b.dataset.say, b.dataset.rate ? parseFloat(b.dataset.rate) : undefined);
+  const b = e.target.closest('[data-say]'); if (b) say(b.dataset.say, b.dataset.rate ? parseFloat(b.dataset.rate) * getRate() / 0.85 : undefined);
 });
-function voiceBanner(){
-  if (!('speechSynthesis' in window)) return `<div class="banner">這個瀏覽器不支援語音播放，請改用 Chrome 或 Edge。</div>`;
-  if (!yueVoice) return `<div class="banner">找不到粵語（zh-HK）語音，播放可能會變成國語腔。Windows 可到「設定 → 時間與語言 → 語音」新增「中文（香港）」語音；或改用 Chrome／Edge 開啟。</div>`;
+// 只有查字幕這種需要裝置語音的頁面才顯示提醒
+function voiceBanner(needTTS){
+  if (!needTTS && Object.keys(AUDIO_MAP).length) return '';
+  if (!('speechSynthesis' in window)) return `<div class="banner">這個瀏覽器不支援語音播放，請改用 Chrome、Edge 或手機瀏覽器。</div>`;
+  if (!yueVoice) return `<div class="banner">這裡的發音使用裝置內建語音，找不到粵語（zh-HK）語音時可能變成國語腔。建議用 Edge 或手機開啟。</div>`;
   return '';
 }
 
@@ -137,10 +171,9 @@ const views = {
       <div class="txt"><div class="row"><span class="hz">${esc(v.hanzi)}</span><span class="jp">${esc(v.jyutping)}</span></div>
       <div>${esc(v.mandarin)}</div>${v.note?`<div class="muted">💡 ${esc(v.note)}</div>`:''}</div>
       <button class="btn icon" title="慢速" data-say="${esc(v.hanzi)}" data-rate="0.55">🐢</button></div>`).join('')}</div>
-    <h3>對話</h3><div class="card">${l.dialogue.map(d=>`<div class="item">${playBtn(d.hanzi)}
-      <div class="txt"><div class="muted">${esc(d.speaker)}</div><div class="hz" style="font-size:19px">${esc(d.hanzi)}</div>
-      <div class="jp">${esc(d.jyutping)}</div><div class="muted">${esc(d.mandarin)}</div></div></div>`).join('')}
-      <div class="row" style="margin-top:10px"><button class="btn primary" id="playAll">▶ 播放整段對話</button></div></div>
+    <h3>對話</h3>${seqControls()}
+    <div class="card" id="seqLines">${l.dialogue.map((d,k)=>lineHTML(d,k)).join('')}</div>
+    <p class="muted">點任何一句可以單獨播放。「跟讀模式」會在每句之後停下來讓你跟著說。</p>
     ${l.tips?.length?`<h3>文法小提示</h3>${l.tips.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}`:''}`;
   },
   patterns(){
@@ -175,13 +208,17 @@ const views = {
     const pref = store.get('storyView', {jp: true, zh: true});
     return `<button class="btn" data-go="stories">← 返回對話劇場</button>
     <h2 style="margin-top:14px">${esc(s.title)}</h2><p class="muted"><span class="tag">${esc(s.style)}</span>${esc(s.scene)}</p>
-    <div class="toggles"><button class="btn primary" id="playStory">▶ 播放全劇</button>
-      <button class="btn${pref.jp?' on':''}" data-toggle="jp">粵拼</button><button class="btn${pref.zh?' on':''}" data-toggle="zh">翻譯</button></div>
-    <div class="card ${pref.jp?'':'hide-jp'} ${pref.zh?'':'hide-zh'}" id="storyLines">${s.lines.map((l,k)=>`<div class="item line" data-line="${k}">
-      <div class="txt"><div class="muted">${esc(l.speaker)}</div><div style="font-size:19px">${esc(l.hanzi)}</div>
-      <div class="jp">${esc(l.jyutping)}</div><div class="muted zh">${esc(l.mandarin)}</div></div></div>`).join('')}</div>
-    <p class="muted">點任何一句可以單獨播放。</p>
+    ${seqControls()}
+    <div class="card" id="seqLines">${s.lines.map((l,k)=>lineHTML(l,k)).join('')}</div>
+    <p class="muted">點任何一句可以單獨播放。「跟讀模式」會在每句之後停下來讓你跟著說，這是最接近母語者的練習方式。</p>
     ${s.notes?.length?`<h3>重點解說</h3>${s.notes.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}`:''}`;
+  },
+  lookup(){
+    return voiceBanner(true) + `<h2>查字幕</h2><p class="muted">看港劇、卡通、YouTube 時，把看不懂的粵語字幕貼進來，每個字都會標上粵拼；課程裡學過的詞會列出意思。</p>
+    <div class="card"><textarea id="lkIn" rows="4" placeholder="例如：你今晚得唔得閒呀？我哋去食糖水啦。" style="width:100%;font:inherit;font-size:18px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink);resize:vertical">${esc(store.get('lkText', ''))}</textarea>
+    <div class="row" style="margin-top:10px"><button class="btn primary" id="lkGo">標註粵拼</button><button class="btn" id="lkPlay">🔊 朗讀</button><button class="btn" id="lkClear">清除</button></div></div>
+    <div id="lkOut"></div>
+    <p class="muted">粵拼由開源工具 <a href="https://github.com/CanCLID/to-jyutping" target="_blank" rel="noopener">to-jyutping</a>（CanCLID）自動標註，多音字偶爾會標錯；點任何字可到粵典查詢。朗讀使用裝置內建語音，品質不如課程裡的錄音。</p>`;
   },
   tones(){
     const T = window.TONES || [];
@@ -218,18 +255,20 @@ function render(arg){
   const parent = {lesson: 'home', story: 'stories'}[cur] || cur;
   document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('on', b.dataset.v === parent));
   if (cur === 'listen'){ const q = $('#qSrc'); q.value = qSrc; q.onchange = () => { qSrc = q.value; newQuiz(); }; newQuiz(); }
-  if (cur === 'story') initStory(arg);
+  if (cur === 'story') initSeq(STORIES[arg].lines);
+  if (cur === 'lesson') initSeq(L[arg].dialogue);
   if (cur === 'speak') initSpeak();
   if (cur === 'flash') nextCard();
-  if (cur === 'lesson'){ $('#playAll').onclick = () => playSeq(L[arg].dialogue.map(d => d.hanzi)); }
-  if (cur === 'tones'){ $('#playTones').onclick = () => playSeq(TONES.map(t => t.hanzi), 0.7); newPair(); }
+  if (cur === 'lookup') initLookup();
+  if (cur === 'tones'){ $('#playTones').onclick = () => playSeq(TONES.map(t => t.hanzi), 0.8); newPair(); }
   window.scrollTo(0,0);
 }
-function go(v, arg){ cur = v; render(arg); }
-function playSeq(list, rate){
-  speechSynthesis.cancel();
-  list.forEach(t => { const u = new SpeechSynthesisUtterance(t); u.lang='zh-HK'; if (yueVoice) u.voice=yueVoice; u.rate = rate || parseFloat($('#rate').value); speechSynthesis.speak(u); });
+function go(v, arg){ stopAll(); cur = v; render(arg); }
+async function playSeq(list, rate){
+  stopAll(); const token = playToken;
+  for (const t of list){ if (token !== playToken) return; await playText(t, rate); await sleep(300); }
 }
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 $('#nav').onclick = e => { const b = e.target.closest('button'); if (b) go(b.dataset.v); };
 app.addEventListener('click', e => {
   const c = e.target.closest('[data-lesson]'); if (c) return go('lesson', +c.dataset.lesson);
@@ -237,26 +276,42 @@ app.addEventListener('click', e => {
   const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
 });
 
-// ---------- 對話劇場 ----------
-function speakLine(text, onend){
-  const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-HK'; if (yueVoice) u.voice = yueVoice;
-  u.rate = parseFloat($('#rate').value); if (onend) { u.onend = onend; u.onerror = onend; }
-  speechSynthesis.speak(u);
+// ---------- 對話播放（課程對話、對話劇場共用）----------
+function lineHTML(l, k){
+  return `<div class="item line" data-line="${k}"><div class="txt"><div class="muted">${esc(l.speaker)}<span class="your-turn">🎙 換你說</span></div>
+    <div style="font-size:19px">${esc(l.hanzi)}</div><div class="jp">${esc(l.jyutping)}</div><div class="muted zh">${esc(l.mandarin)}</div></div></div>`;
 }
-function initStory(i){
-  const s = STORIES[i], box = $('#storyLines');
-  const mark = k => box.querySelectorAll('.line').forEach((el, j) => el.classList.toggle('playing', j === k));
-  box.onclick = e => { const l = e.target.closest('[data-line]'); if (!l) return; speechSynthesis.cancel(); const k = +l.dataset.line; mark(k); speakLine(s.lines[k].hanzi, () => mark(-1)); };
-  $('#playStory').onclick = () => {
-    speechSynthesis.cancel();
-    let k = 0;
-    const next = () => { if (cur !== 'story' || k >= s.lines.length) return mark(-1); mark(k); box.children[k].scrollIntoView({block:'nearest', behavior:'smooth'}); speakLine(s.lines[k++].hanzi, () => setTimeout(next, 350)); };
-    setTimeout(next, 100);
+function seqControls(){
+  const pref = store.get('storyView', {jp: true, zh: true});
+  return `<div class="toggles"><button class="btn primary" id="seqPlay">▶ 播放全部</button><button class="btn" id="seqShadow">🗣 跟讀模式</button>
+    <button class="btn" id="seqStop">■ 停止</button><span style="flex:1"></span>
+    <button class="btn${pref.jp?' on':''}" data-toggle="jp">粵拼</button><button class="btn${pref.zh?' on':''}" data-toggle="zh">翻譯</button></div>`;
+}
+function initSeq(lines){
+  const box = $('#seqLines'); if (!box) return;
+  const pref = store.get('storyView', {jp: true, zh: true});
+  box.classList.toggle('hide-jp', !pref.jp); box.classList.toggle('hide-zh', !pref.zh);
+  const mark = (k, turn) => box.querySelectorAll('.line').forEach((el, j) => { el.classList.toggle('playing', j === k && !turn); el.classList.toggle('turn', j === k && !!turn); });
+  const run = async shadow => {
+    stopAll(); const token = playToken;
+    for (let k = 0; k < lines.length; k++){
+      if (token !== playToken) return;
+      mark(k); box.children[k].scrollIntoView({block: 'nearest', behavior: 'smooth'});
+      const t0 = performance.now(); await playText(lines[k].hanzi);
+      if (token !== playToken) return;
+      if (shadow){ mark(k, true); await sleep(Math.max(1200, (performance.now() - t0) * 1.3 + 500)); }
+      else await sleep(350);
+    }
+    mark(-1);
   };
+  box.onclick = async e => { const l = e.target.closest('[data-line]'); if (!l) return; const k = +l.dataset.line; mark(k); await say(lines[k].hanzi); mark(-1); };
+  $('#seqPlay').onclick = () => run(false);
+  $('#seqShadow').onclick = () => run(true);
+  $('#seqStop').onclick = () => { stopAll(); mark(-1); };
   document.querySelectorAll('[data-toggle]').forEach(b => b.onclick = () => {
-    const pref = store.get('storyView', {jp: true, zh: true}); const key = b.dataset.toggle;
-    pref[key] = !pref[key]; store.set('storyView', pref);
-    b.classList.toggle('on', pref[key]); box.classList.toggle('hide-' + key, !pref[key]);
+    const p = store.get('storyView', {jp: true, zh: true}); const key = b.dataset.toggle;
+    p[key] = !p[key]; store.set('storyView', p);
+    b.classList.toggle('on', p[key]); box.classList.toggle('hide-' + key, !p[key]);
   });
 }
 
@@ -270,10 +325,10 @@ const allSentences = () => [
   ...(window.REACTIONS || [])
 ].filter(x => x.hanzi && x.mandarin);
 function newQuiz(){
-  const pool = qSrc === 'sentence' ? allSentences() : allVocab;
+  const pool = uniqBy(qSrc === 'sentence' ? allSentences() : allVocab, x => x.hanzi);
   const box = $('#quiz'); if (!box || pool.length < 4) return;
-  const ans = pool[Math.floor(Math.random()*pool.length)];
-  const opts = shuffle([ans, ...shuffle(pool.filter(v => v.mandarin !== ans.mandarin)).slice(0,3)]);
+  const ans = pickSmart(pool, 'quiz-' + qSrc, missWeight);
+  const opts = shuffle([ans, ...shuffle(uniqBy(pool.filter(v => v.mandarin !== ans.mandarin), v => v.mandarin)).slice(0,3)]);
   box.innerHTML = `<div class="row"><button class="btn primary" data-say="${esc(ans.hanzi)}">🔊 播放</button>
     <button class="btn" data-say="${esc(ans.hanzi)}" data-rate="0.55">🐢 慢速</button>
     <span class="muted" style="margin-left:auto">答對 ${qStats.right} / ${qStats.total}</span></div>
@@ -283,6 +338,7 @@ function newQuiz(){
     const b = e.target.closest('button'); if (!b || box.dataset.done) return;
     box.dataset.done = 1; qStats.total++;
     const right = b.dataset.m === ans.mandarin; if (right) qStats.right++;
+    markResult(ans.hanzi, right);
     box.querySelectorAll('.choices button').forEach(x => { if (x.dataset.m === ans.mandarin) x.classList.add('ok'); else if (x===b) x.classList.add('bad'); });
     $('#qRes').innerHTML = `<div class="tip" style="margin-top:12px">${right?'✅ 答對！':'❌ 再接再厲'}　<b>${esc(ans.hanzi)}</b> <span class="jp">${esc(ans.jyutping)}</span></div>
       <button class="btn primary" id="qNext" style="margin-top:8px">下一題 →</button>`;
@@ -290,11 +346,82 @@ function newQuiz(){
   };
 }
 
+// ---------- 查字幕 ----------
+let tjReady = null;
+const loadTJ = () => tjReady || (tjReady = new Promise((res, rej) => {
+  if (window.ToJyutping) return res();
+  const s = document.createElement('script'); s.src = 'vendor/to-jyutping.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+}));
+// 用課程裡審過的詞覆蓋字典讀音（例如 糖水 tong4 seoi2），讓學過的詞一定標對
+let tjConv = null;
+function tjConverter(){
+  if (tjConv) return tjConv;
+  // 手動修正：字典把「食糖」整詞讀成 tong2，會蓋過「糖水」
+  const map = {'糖水': 'tong4 seoi2', '食糖水': 'sik6 tong4 seoi2', '飲糖水': 'jam2 tong4 seoi2'};
+  const all = [...allVocab, ...(window.REACTIONS || []), ...L.flatMap(l => l.dialogue), ...(window.STORIES || []).flatMap(s => s.lines), ...(window.PATTERNS || []).flatMap(p => p.examples)];
+  for (const x of all){
+    // 把句子切成「字」和「音節」，數量一致時逐段加入
+    const chunks = x.hanzi.split(/[，。？！、,.?!\s「」…—]+/).filter(Boolean);
+    const sylChunks = x.jyutping.split(/[,.?!]+/).map(s => s.trim()).filter(Boolean);
+    if (chunks.length !== sylChunks.length) continue;
+    chunks.forEach((c, i) => { const syl = sylChunks[i].split(/\s+/); if ([...c].length === syl.length && /^[一-鿿㐀-䶿\u{20000}-\u{2ffff}]+$/u.test(c) && c.length >= 2) map[c] = syl.join(' '); });
+  }
+  return (tjConv = window.ToJyutping.customize(map));
+}
+// 課程裡所有有意思的詞句，用來比對字幕
+const glossary = () => uniqBy([...allVocab, ...(window.REACTIONS || [])], x => x.hanzi)
+  .map(x => ({...x, key: x.hanzi.replace(/[？！，。、?!.,\s]/g, '')})).filter(x => x.key.length >= 2).sort((a, b) => b.key.length - a.key.length);
+function initLookup(){
+  const inp = $('#lkIn'), out = $('#lkOut');
+  const run = async () => {
+    const text = inp.value.trim(); store.set('lkText', text);
+    if (!text){ out.innerHTML = ''; return; }
+    out.innerHTML = '<div class="card muted">載入粵拼字典中…</div>';
+    try { await loadTJ(); } catch { out.innerHTML = '<div class="card">粵拼字典載入失敗，請確認網路連線。</div>'; return; }
+    const list = tjConverter().getJyutpingList(text);
+    const ruby = list.map(([ch, jp]) => jp
+      ? `<a class="rb" href="https://words.hk/zidin/${encodeURIComponent(ch)}" target="_blank" rel="noopener"><small>${esc(jp)}</small>${esc(ch)}</a>`
+      : (ch === '\n' ? '<br>' : esc(ch))).join('');
+    const flat = text.replace(/[？！，。、?!.,\s]/g, '');
+    const found = []; let rest = flat;
+    for (const g of glossary()) if (rest.includes(g.key)){ found.push(g); rest = rest.split(g.key).join('　'); }
+    out.innerHTML = `<div class="card lk">${ruby}</div>
+      ${found.length ? `<h3>課程裡學過的詞</h3><div class="card">${found.map(g => `<div class="item">${playBtn(g.hanzi)}<div class="txt">
+        <div class="row"><span class="hz" style="font-size:18px">${esc(g.hanzi)}</span><span class="jp">${esc(g.jyutping)}</span></div><div>${esc(g.mandarin)}</div></div></div>`).join('')}</div>`
+        : '<p class="muted">這段字幕裡沒有課程學過的詞。可以點字到粵典查意思。</p>'}`;
+  };
+  $('#lkGo').onclick = run;
+  $('#lkPlay').onclick = async () => { const parts = inp.value.split(/(?<=[。！？!?\n])/).map(s => s.trim()).filter(Boolean); await playSeq(parts); };
+  $('#lkClear').onclick = () => { inp.value = ''; store.set('lkText', ''); out.innerHTML = ''; inp.focus(); };
+  if (inp.value.trim()) run();
+}
+
+// ---------- 出題：不重複、答錯的多出 ----------
+const recentPicks = {};
+function pickSmart(pool, key, weightOf){
+  const recent = recentPicks[key] || (recentPicks[key] = []);
+  const id = x => x.hanzi || x.label;
+  let cands = pool.filter(x => !recent.includes(id(x)));
+  if (!cands.length) cands = pool;
+  const w = cands.map(x => Math.max(0.1, weightOf ? weightOf(x) : 1));
+  let r = Math.random() * w.reduce((a, b) => a + b, 0), i = 0;
+  while ((r -= w[i]) > 0 && i < cands.length - 1) i++;
+  recent.push(id(cands[i])); if (recent.length > Math.min(20, Math.floor(pool.length * 0.6))) recent.shift();
+  return cands[i];
+}
+const missed = () => store.get('missed', {});
+function markResult(hanzi, right){
+  const m = missed(); m[hanzi] = right ? Math.max(0, (m[hanzi] || 0) - 1) : (m[hanzi] || 0) + 2;
+  if (!m[hanzi]) delete m[hanzi]; store.set('missed', m);
+}
+const missWeight = x => 1 + (missed()[x.hanzi] || 0);
+const uniqBy = (arr, f) => { const s = new Set(); return arr.filter(x => !s.has(f(x)) && s.add(f(x))); };
+
 // ---------- 聲調對比 ----------
 let pStats = {right:0,total:0};
 function newPair(){
   const box = $('#pair'); const P = window.TONE_PAIRS || []; if (!box || !P.length) return;
-  const p = P[Math.floor(Math.random()*P.length)];
+  const p = pickSmart(P, 'pair');
   const ans = Math.random() < .5 ? 'a' : 'b';
   box.innerHTML = `<div class="muted">${esc(p.label)}</div>
     <div class="row" style="margin-top:8px"><button class="btn primary" data-say="${esc(p[ans].hanzi)}">🔊 播放</button>
@@ -331,7 +458,7 @@ function initSpeak(){ $('#spSrc').onchange = nextSpeak; nextSpeak(); }
 function nextSpeak(){
   const src = $('#spSrc').value;
   const pool = src === 'vocab' ? allVocab : allSentences();
-  spItem = pool[Math.floor(Math.random()*pool.length)];
+  spItem = pickSmart(uniqBy(pool, x => x.hanzi), 'speak-' + src, missWeight);
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   $('#spBox').innerHTML = `<div class="flash" style="padding:16px"><div class="hz">${esc(spItem.hanzi)}</div><div class="jp">${esc(spItem.jyutping)}</div><div class="muted">${esc(spItem.mandarin)}</div></div>
     <div class="row" style="justify-content:center">${playBtn(spItem.hanzi)}<button class="btn primary" id="rec" ${SR?'':'disabled'}>🎙️ 開始說</button><button class="btn" id="spNext">換一句 →</button></div>
@@ -345,6 +472,7 @@ function nextSpeak(){
       const alts = [...e.results[0]].map(x => x.transcript);
       const best = alts.reduce((m, t) => { const s = similarity(spItem.hanzi, t); return s > m.s ? {t, s} : m; }, {t: alts[0], s: -1});
       const pct = Math.round(best.s * 100);
+      markResult(spItem.hanzi, pct >= 80);
       $('#spRes').innerHTML = `<div class="score" style="color:${pct>=80?'var(--ok)':pct>=50?'var(--accent)':'var(--bad)'}">${pct} 分</div>
         <div class="muted">辨識結果：「${esc(best.t)}」</div><div class="muted">${pct>=80?'很棒！':pct>=50?'接近了，注意聲調再試一次':'多聽幾次慢速發音再試'}</div>`;
     };
@@ -358,8 +486,7 @@ function nextSpeak(){
 function nextCard(){
   const box = $('#fc'); if (!box) return;
   const lv = store.get('fcLevels', {});
-  const weighted = allVocab.flatMap(v => Array(Math.max(1, 5 - (lv[v.hanzi]||0))).fill(v));
-  const c = weighted[Math.floor(Math.random()*weighted.length)];
+  const c = pickSmart(allVocab, 'flash', v => 5 - (lv[v.hanzi] || 0));
   const known = allVocab.filter(v => (lv[v.hanzi]||0) >= 3).length;
   box.innerHTML = `<div class="muted">已熟練 ${known} / ${allVocab.length}</div>
     <div class="flash"><div class="hz">${esc(c.hanzi)}</div><div id="back" style="display:none;margin-top:10px">
@@ -377,6 +504,8 @@ function nextCard(){
   };
 }
 
+$('#rate').value = store.get('rate', '0.85');
+$('#rate').onchange = e => store.set('rate', e.target.value);
 render();
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
