@@ -77,6 +77,7 @@ details.card[open] summary{margin-bottom:8px}
     <button data-v="patterns">句型</button>
     <button data-v="stories">對話劇場</button>
     <button data-v="reactions">口語反應</button>
+    <button data-v="codemix">中英夾雜</button>
     <button data-v="weekly">每週素材</button>
     <button data-v="lookup">查字幕</button>
     <button data-v="tones">聲調</button>
@@ -92,6 +93,7 @@ details.card[open] summary{margin-bottom:8px}
 <script src="stories.js"></script>
 <script src="content-muse.js"></script>
 <script src="weekly.js"></script>
+<script src="codemix.js"></script>
 <script src="audio-map.js"></script>
 <script>
 const $ = s => document.querySelector(s);
@@ -217,6 +219,19 @@ const views = {
     <div class="card" id="seqLines">${s.lines.map((l,k)=>lineHTML(l,k)).join('')}</div>
     <p class="muted">點任何一句可以單獨播放。「跟讀模式」會在每句之後停下來讓你跟著說，這是最接近母語者的練習方式。</p>
     ${s.notes?.length?`<h3>重點解說</h3>${s.notes.map(t=>`<div class="tip">${esc(t)}</div>`).join('')}`:''}`;
+  },
+  codemix(){
+    const G = window.CODEMIX || [];
+    return `<h2>港式中英夾雜</h2><p class="muted">香港人講話常常夾英文，而且英文會套上粵語的聲調和語法（例如 book 咗、check 吓、free 唔 free）。「港式唸法」用粵拼標出香港人實際怎麼唸，跟標準英文不太一樣。</p>
+    ${G.map((g, gi) => `<details class="card" ${gi === 0 ? 'open' : ''}><summary><div class="row"><span class="hz" style="font-size:19px">${esc(g.group)}</span>
+      <span class="muted" style="flex:1">${g.items.length} 個說法</span><span class="muted">▾</span></div></summary>
+      ${g.items.map(i => `<div class="item">${playBtn(i.hanzi)}<div class="txt">
+        <div class="row"><span class="tag">${esc(i.term)}</span><span class="muted" style="font-size:13px">港式唸法 <span class="jp">${esc(i.pron)}</span></span></div>
+        <div style="font-size:18px;margin-top:4px">${esc(i.hanzi)}</div><div class="jp">${esc(i.jyutping)}</div>
+        <div class="muted">${esc(i.mandarin)}</div><div class="muted" style="font-size:13px">💡 ${esc(i.note)}</div></div>
+        <button class="btn icon" title="慢速" data-say="${esc(i.hanzi)}" data-rate="0.55">🐢</button></div>`).join('')}
+    </details>`).join('')}
+    <p class="muted">想聽中英夾雜的完整對話，可以到「對話劇場」看職場和約飯的短劇。</p>`;
   },
   weekly(){
     const W = window.WEEKLY || [];
@@ -350,7 +365,8 @@ const allSentences = () => [
   ...(window.PATTERNS || []).flatMap(p => p.examples),
   ...(window.STORIES || []).flatMap(s => s.lines),
   ...(window.REACTIONS || []),
-  ...(window.WEEKLY || []).flatMap(w => w.media.flatMap(m => m.examples))
+  ...(window.WEEKLY || []).flatMap(w => w.media.flatMap(m => m.examples)),
+  ...(window.CODEMIX || []).flatMap(g => g.items)
 ].filter(x => x.hanzi && x.mandarin);
 function newQuiz(){
   const pool = uniqBy(qSrc === 'sentence' ? allSentences() : allVocab, x => x.hanzi);

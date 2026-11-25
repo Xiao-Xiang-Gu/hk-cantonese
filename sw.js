@@ -1,7 +1,7 @@
 // 離線快取：先用網路拿最新版，沒網路時用快取
 // 音檔不預先下載（太多），播放過一次就會被快取，之後離線也能播
-const CACHE = 'hk-cantonese-v5';
-const FILES = ['./', './index.html', './lessons.js', './patterns.js', './stories.js', './content-muse.js', './weekly.js', './audio-map.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
+const CACHE = 'hk-cantonese-v6';
+const FILES = ['./', './index.html', './lessons.js', './patterns.js', './stories.js', './content-muse.js', './weekly.js', './codemix.js', './vendor/to-jyutping.js', './audio-map.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
