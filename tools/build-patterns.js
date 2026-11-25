@@ -20,8 +20,8 @@ Object.assign(gaa, {
 });
 ex('㗎', '呢杯係我嘅', { hanzi: '呢杯係我嘅，你嗰杯喺枱上面㗎。', jyutping: 'ni1 bui1 hai6 ngo5 ge3, nei5 go2 bui1 hai2 toi2 soeng6 min6 gaa3.' });
 ex('㗎', '係㗎？', { hanzi: '呢度唔可以食嘢㗎。', jyutping: 'ni1 dou6 m4 ho2 ji5 sik6 je5 gaa3.', mandarin: '這裡不能吃東西喔。' });
-ex('嘛', '我一個人拎唔晒', { jyutping: 'ngo5 jat1 go3 jan4 ling1 m4 saai3 maa3, nei5 bong1 ngo5 ling1 jat1 doi2 laa1.' });
-ex('然後', '你行到街口', { jyutping: 'nei5 haang4 dou3 gaai1 hau2, jin4 hau6 hoeng3 zo2 zyun3.' });
+ex('嘛', '我一個人拎唔晒', { jyutping: 'ngo5 jat1 go3 jan4 ling1 m4 saai3 maa3, nei5 bong1 ngo5 ling1 jat1 doi2 laa1.', mandarin: '我一個人拿不了這麼多嘛，你幫我拿一袋吧。' });
+ex('然後', '你行到街口', { hanzi: '你行到街口，然後轉左。', jyutping: 'nei5 haang4 dou3 gaai1 hau2, jin4 hau6 zyun3 zo2.', mandarin: '你走到路口，然後左轉。' });
 ex('……晒', '我睇晒你畀我', { jyutping: 'ngo5 tai2 saai3 nei5 bei2 ngo5 go2 gei2 fan6 man4 gin2 laa3.' });
 ex('……緊', '我呢排搵緊屋', { jyutping: 'ngo5 ni1 paai2 wan2 gan2 uk1, soeng2 bun1 kan5 gung1 si1 di1.' });
 

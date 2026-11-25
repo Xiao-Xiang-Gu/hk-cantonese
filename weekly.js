@@ -17,7 +17,7 @@ window.WEEKLY = [
       {
         "hanzi": "中伏",
         "jyutping": "zung3 fuk6",
-        "mandarin": "踩雷、中招，不如預期",
+        "mandarin": "踩雷、中招、上當",
         "note": "買到雷品、去到難吃的餐廳、被騙的時候",
         "source": {
           "title": "Wiktionary：中伏",
@@ -104,7 +104,7 @@ window.WEEKLY = [
           {
             "hanzi": "我想去香港睇下啲街市。",
             "jyutping": "ngo5 soeng2 heoi3 hoeng1 gong2 tai2 haa5 di1 gaai1 si5.",
-            "mandarin": "我想去香港看看那些街市。"
+            "mandarin": "我想去香港逛逛當地的傳統市場。"
           },
           {
             "hanzi": "呢條片講香港人嘅日常生活。",

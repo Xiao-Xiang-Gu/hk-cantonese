@@ -326,7 +326,7 @@ window.STORIES.push(...[
         "speaker": "阿朗",
         "hanzi": "仲爭兩個數，我啱啱先 send 咗封 email 問個客。",
         "jyutping": "zung6 zaang1 loeng5 go3 sou3, ngo5 ngaam1 ngaam1 sin1 send zo2 fung1 email man6 go3 haak3.",
-        "mandarin": "還差兩個數字，我剛寄了封信去問客戶。"
+        "mandarin": "還差兩個數字，我剛寄了封電子郵件問客戶。"
       },
       {
         "speaker": "阿晴",
@@ -368,7 +368,7 @@ window.STORIES.push(...[
         "speaker": "阿晴",
         "hanzi": "你再寫 email 催佢嗰陣，記得 cc 埋我。",
         "jyutping": "nei5 zoi3 se2 email ceoi1 keoi5 go2 zan6, gei3 dak1 cc maai4 ngo5.",
-        "mandarin": "你再寄信催他的時候，記得也把我加進副本。"
+        "mandarin": "你再寄電子郵件催他的時候，記得把我也加進副本。"
       },
       {
         "speaker": "阿朗",
@@ -380,7 +380,7 @@ window.STORIES.push(...[
         "speaker": "阿晴",
         "hanzi": "好呀，趕得切五點交，今晚就唔使 OT 喇。",
         "jyutping": "hou2 aa3, gon2 dak1 cit3 ng5 dim2 gaau1, gam1 maan5 zau6 m4 sai2 OT laa3.",
-        "mandarin": "好啊，要是來得及五點交件，今晚就不用加班了。"
+        "mandarin": "好啊，要是趕得及在五點前交件，今晚就不用加班了。"
       }
     ],
     "notes": [
@@ -416,7 +416,7 @@ window.STORIES.push(...[
         "speaker": "阿欣",
         "hanzi": "我 book 咗一點，三位，陣間 send 個地址畀你哋。",
         "jyutping": "ngo5 book zo2 jat1 dim2, saam1 wai2, zan6 gaan1 send go3 dei6 zi2 bei2 nei5 dei6.",
-        "mandarin": "我訂好一點，三位，等一下把地址傳給你們。"
+        "mandarin": "我訂好下午一點的位子了，三位，等一下把地址傳給你們。"
       },
       {
         "speaker": "阿俊",

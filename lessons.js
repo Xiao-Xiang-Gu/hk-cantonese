@@ -27,7 +27,7 @@ window.LESSONS = [
       { speaker: "B", hanzi: "未呀，而家去食。", jyutping: "mei6 aa3, ji4 gaa1 heoi3 sik6.", mandarin: "還沒，我現在要去吃。" }
     ],
     tips: [
-      "「咗」(zo2) 放在動詞後面表示完成，等於國語的「了」。",
+      "「咗」(zo2) 放在動詞後面，表示動作已經發生，很像國語的「了」；但不一定是做完，例如「食咗兩啖，仲食緊」（吃了兩口，還在吃）。",
       "「未」(mei6) 放句尾問「……了沒？」，回答「未」就是「還沒」。",
       "「唔」(m4) 等於國語的「不」。"
     ]
@@ -127,7 +127,7 @@ window.LESSONS = [
       { speaker: "A", hanzi: "明白喇，唔該晒！", jyutping: "ming4 baak6 laa3, m4 goi1 saai3!", mandarin: "懂了，謝謝你！" }
     ],
     tips: [
-      "問「哪一條線」用「邊條綫」，問「幾站」用「幾多個站」，粵語都保留量詞。",
+      "問「哪一條線」用「邊條綫」，問「幾站」可以說「幾多個站」或「幾多站」。",
       "「使唔使」把肯定和否定放一起問，意思是「需不需要」；回答「不用」就說「唔使」。",
       "「往中環方向」指列車開往的終點方向，沿途可在尖沙咀下車；口語也說「去中環嗰班車」，「嗰班車」就是「那班車」。",
       "「就得喇」表示「這樣就可以了」。"
@@ -184,8 +184,8 @@ window.LESSONS = [
       { hanzi: "幾點要 check out 呀？", jyutping: "gei2 dim2 jiu3 check out aa3?", mandarin: "幾點要退房？" },
       { hanzi: "中午十二點前", jyutping: "zung1 ng5 sap6 ji6 dim2 cin4", mandarin: "中午十二點前" },
       { hanzi: "寄存行李", jyutping: "gei3 cyun4 hang4 lei5", mandarin: "寄放行李", note: "正式的服務名稱。單講「寄行李」容易被聽成要郵寄出去。" },
-      { hanzi: "可唔可以幫我睇住啲行李呀？", jyutping: "ho2 m4 ho2 ji5 bong1 ngo5 tai2 zyu6 di1 hang4 lei5 aa3?", mandarin: "可以幫我顧一下行李嗎？", note: "口頭請櫃台寄放行李時，比「寄存行李」更口語。" },
-      { hanzi: "擺低", jyutping: "baai2 dai1", mandarin: "放下／放在這裡", note: "「擺低喺度」就是「放在這裡」。" }
+      { hanzi: "可唔可以幫我睇住啲行李呀？", jyutping: "ho2 m4 ho2 ji5 bong1 ngo5 tai2 zyu6 di1 hang4 lei5 aa3?", mandarin: "可以幫我看著行李嗎？", note: "請人暫時幫忙看著行李時用；要寄放行李就說「寄存行李」。" },
+      { hanzi: "擺低", jyutping: "baai2 dai1", mandarin: "放下", note: "「擺低喺度」就是「放在這裡」。" }
     ],
     dialogue: [
       { speaker: "A", hanzi: "唔該，我訂咗房，想 check in。", jyutping: "m4 goi1, ngo5 deng6 zo2 fong2, soeng2 check in.", mandarin: "你好，我有訂房，想辦理入住。" },
@@ -262,7 +262,7 @@ window.LESSONS = [
       { speaker: "B", hanzi: "得呀，幾點見呀？", jyutping: "dak1 aa3, gei2 dim2 gin3 aa3?", mandarin: "有啊，幾點見？" },
       { speaker: "A", hanzi: "下晝三點半，你想喺邊度等呀？", jyutping: "haa6 zau3 saam1 dim2 bun3, nei5 soeng2 hai2 bin1 dou6 dang2 aa3?", mandarin: "下午三點半。你想在哪裡碰面？" },
       { speaker: "B", hanzi: "喺旺角站等啦。", jyutping: "hai2 wong6 gok3 zaam6 dang2 laa1.", mandarin: "在旺角站碰面吧。" },
-      { speaker: "A", hanzi: "唔好意思，我聽日有啲事，可唔可以改到後日三點半呀？", jyutping: "m4 hou2 ji3 si1, ngo5 ting1 jat6 jau5 di1 si6, ho2 m4 ho2 ji5 goi2 dou3 hau6 jat6 saam1 dim2 bun3 aa3?", mandarin: "不好意思，我明天有點事，可以改到後天三點半嗎？" },
+      { speaker: "A", hanzi: "唔好意思，我啱啱先記起聽日有啲事，可唔可以改到後日三點半呀？", jyutping: "m4 hou2 ji3 si1, ngo5 ngaam1 ngaam1 sin1 gei3 hei2 ting1 jat6 jau5 di1 si6, ho2 m4 ho2 ji5 goi2 dou3 hau6 jat6 saam1 dim2 bun3 aa3?", mandarin: "不好意思，我剛剛才想起明天有點事，可以改到後天三點半嗎？" },
       { speaker: "B", hanzi: "OK，咁都係喺旺角站等呀？", jyutping: "OK, gam2 dou1 hai6 hai2 wong6 gok3 zaam6 dang2 aa3?", mandarin: "好啊，那一樣在旺角站碰面嗎？" },
       { speaker: "A", hanzi: "係呀，後日見！", jyutping: "hai6 aa3, hau6 jat6 gin3!", mandarin: "是啊，後天見！" }
     ],
@@ -369,15 +369,15 @@ window.LESSONS = [
       },
       {
         "speaker": "A",
-        "hanzi": "係咩？咁你試過佢哋個招牌菜未？",
-        "jyutping": "hai6 me1? gam2 nei5 si3 gwo3 keoi5 dei6 go3 ziu1 paai4 coi3 mei6?",
-        "mandarin": "是嗎？那你試過他們的招牌菜嗎？"
+        "hanzi": "係咩？咁今晚一齊去試吓佢哋個招牌菜好唔好？",
+        "jyutping": "hai6 me1? gam2 gam1 maan5 jat1 cai4 heoi3 si3 haa5 keoi5 dei6 go3 ziu1 paai4 coi3 hou2 m4 hou2?",
+        "mandarin": "是嗎？那今晚一起去吃吃看他們的招牌菜好不好？"
       },
       {
         "speaker": "B",
-        "hanzi": "未呀，今晚試吓先。",
-        "jyutping": "mei6 aa3, gam1 maan5 si3 haa5 sin1.",
-        "mandarin": "還沒，今晚先試試看。"
+        "hanzi": "好呀，一於咁話！",
+        "jyutping": "hou2 aa3, jat1 jyu1 gam2 waa6!",
+        "mandarin": "好啊，就這麼說定了！"
       }
     ],
     "tips": [
@@ -467,7 +467,7 @@ window.LESSONS = [
         "speaker": "A",
         "hanzi": "我問你今晚想唔想去食糖水。",
         "jyutping": "ngo5 man6 nei5 gam1 maan5 soeng2 m4 soeng2 heoi3 sik6 tong4 seoi2.",
-        "mandarin": "我問你今晚想不想去吃甜品。"
+        "mandarin": "我問你今晚想不想去吃糖水（港式甜湯）。"
       },
       {
         "speaker": "B",
@@ -477,9 +477,9 @@ window.LESSONS = [
       },
       {
         "speaker": "A",
-        "hanzi": "好呀，我想去食糖水。",
-        "jyutping": "hou2 aa3, ngo5 soeng2 heoi3 sik6 tong4 seoi2.",
-        "mandarin": "好啊，我想去吃甜品。"
+        "hanzi": "好，我講慢啲。你今晚想唔想去食糖水呀？",
+        "jyutping": "hou2, ngo5 gong2 maan6 di1. nei5 gam1 maan5 soeng2 m4 soeng2 heoi3 sik6 tong4 seoi2 aa3?",
+        "mandarin": "好，我說慢一點。你今晚想不想去吃糖水？"
       },
       {
         "speaker": "B",
@@ -489,9 +489,9 @@ window.LESSONS = [
       },
       {
         "speaker": "A",
-        "hanzi": "糖水即係甜品。你知唔知「得閒」咩意思？",
-        "jyutping": "tong4 seoi2 zik1 hai6 tim4 ban2. nei5 zi1 m4 zi1 dak1 haan4 me1 ji3 si1?",
-        "mandarin": "「糖水」就是甜品。你知道「得閒」是什麼意思嗎？"
+        "hanzi": "糖水係一種港式甜品，好似紅豆沙、芝麻糊咁。你知唔知「得閒」咩意思？",
+        "jyutping": "tong4 seoi2 hai6 jat1 zung2 gong2 sik1 tim4 ban2, hou2 ci5 hung4 dau2 saa1, zi1 maa4 wu2 gam2. nei5 zi1 m4 zi1 dak1 haan4 me1 ji3 si1?",
+        "mandarin": "「糖水」是一種港式甜品，像紅豆沙、芝麻糊。你知道「得閒」是什麼意思嗎？"
       },
       {
         "speaker": "B",

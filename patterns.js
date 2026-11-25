@@ -192,7 +192,7 @@ window.PATTERNS = [
       {
         "hanzi": "我一個人拎唔晒嘛，你幫我拎一袋啦。",
         "jyutping": "ngo5 jat1 go3 jan4 ling1 m4 saai3 maa3, nei5 bong1 ngo5 ling1 jat1 doi2 laa1.",
-        "mandarin": "我一個人拿不完嘛，你幫我拿一袋吧。"
+        "mandarin": "我一個人拿不了這麼多嘛，你幫我拿一袋吧。"
       }
     ]
   },
@@ -315,8 +315,8 @@ window.PATTERNS = [
     "explain": "「然後」前面是先發生或先做的事，後面接下一步，講路線、交代步驟和說經過都能用。香港人聊天時也常用「跟住」來接下一件事，聽到這兩個詞都可以預期後面要講接下來的事。",
     "examples": [
       {
-        "hanzi": "你行到街口，然後向左轉。",
-        "jyutping": "nei5 haang4 dou3 gaai1 hau2, jin4 hau6 hoeng3 zo2 zyun3.",
+        "hanzi": "你行到街口，然後轉左。",
+        "jyutping": "nei5 haang4 dou3 gaai1 hau2, jin4 hau6 zyun3 zo2.",
         "mandarin": "你走到路口，然後左轉。"
       },
       {

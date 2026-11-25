@@ -13,7 +13,12 @@ const ITEM_FIXES = [
 // 審稿後刪除的項目（term）
 const REMOVE = [];
 // 短劇修正：[story id, 台詞開頭, 要覆蓋的欄位]
-const LINE_FIXES = [];
+const LINE_FIXES = [
+  ['deadline-and-meeting', '仲爭兩個數', { mandarin: '還差兩個數字，我剛寄了封電子郵件問客戶。' }],
+  ['deadline-and-meeting', '你再寫 email', { mandarin: '你再寄電子郵件催他的時候，記得把我也加進副本。' }],
+  ['deadline-and-meeting', '好呀，趕得切', { mandarin: '好啊，要是趕得及在五點前交件，今晚就不用加班了。' }],
+  ['lunch-group-chat', '我 book 咗一點', { mandarin: '我訂好下午一點的位子了，三位，等一下把地址傳給你們。' }]
+];
 
 const BAD = /[<>`]|javascript:|https?:\/\/|\$\{/i;
 const JP_OK = /^[A-Za-z0-9 ,.?!'’\-…]*$/;
