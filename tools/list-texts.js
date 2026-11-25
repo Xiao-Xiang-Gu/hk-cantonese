@@ -2,7 +2,7 @@
 const path = require('path');
 const root = path.join(__dirname, '..');
 global.window = {};
-['lessons', 'patterns', 'stories', 'content-muse'].forEach(f => require(path.join(root, f + '.js')));
+['lessons', 'patterns', 'stories', 'content-muse', 'weekly'].forEach(f => require(path.join(root, f + '.js')));
 const W = global.window;
 
 const F1 = 'zh-HK-HiuMaanNeural', F2 = 'zh-HK-HiuGaaiNeural', M = 'zh-HK-WanLungNeural';
@@ -16,6 +16,7 @@ const add = (text, voice) => { if (text && !out.has(text)) out.set(text, voice);
 W.LESSONS.forEach(l => l.vocab.forEach(v => add(v.hanzi, F1)));
 (W.PATTERNS || []).forEach(p => p.examples.forEach(e => add(e.hanzi, F1)));
 (W.REACTIONS || []).forEach(r => add(r.hanzi, F1));
+(W.WEEKLY || []).forEach(w => { w.slang.forEach(s => add(s.hanzi, F1)); w.media.forEach(m => m.examples.forEach(e => add(e.hanzi, F2))); });
 (W.TONES || []).forEach(t => add(t.hanzi, F1));
 (W.TONE_PAIRS || []).forEach(p => { add(p.a.hanzi, F1); add(p.b.hanzi, F1); });
 
