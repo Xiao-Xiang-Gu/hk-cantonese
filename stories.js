@@ -131,7 +131,7 @@ window.STORIES = [
       {
         "speaker": "阿欣",
         "hanzi": "咁你聽日仲放唔放假㗎？",
-        "jyutping": "gam2 nei5 ting1 jat6 zung6 fong3 m4 fong3 gaa3?",
+        "jyutping": "gam2 nei5 ting1 jat6 zung6 fong3 m4 fong3 gaa3 gaa3?",
         "mandarin": "那你明天還有放假嗎？"
       },
       {

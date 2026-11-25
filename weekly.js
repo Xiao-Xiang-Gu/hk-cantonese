@@ -46,9 +46,9 @@ window.WEEKLY = [
       },
       {
         "hanzi": "好chill",
-        "jyutping": "hou2 chill（讀 cil1）",
+        "jyutping": "hou2 chill",
         "mandarin": "很放鬆、很悠閒",
-        "note": "形容氣氛或生活狀態輕鬆、不緊張時；香港年輕人常用的中英夾雜說法",
+        "note": "形容氣氛或生活狀態輕鬆、不緊張時；香港年輕人常用的中英夾雜說法；chill 港式唸法近似 ciu1",
         "source": {
           "title": "搞掂 gaaudim：2025-2026 潮語",
           "url": "https://gaaudim.com/mayjie_vw20"

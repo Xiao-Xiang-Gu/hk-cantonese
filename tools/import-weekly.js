@@ -17,6 +17,9 @@ const FIXES = {
   2: w => {
     const rthk = w.media.find(m => m.title.includes('講東講西'));
     if (rthk) rthk.learn = rthk.learn.replace(/最新一集（\d{4}-\d{2}-\d{2}）/, '近期一集');
+    // 粵拼欄只放粵拼；唸法說明移到 note，並與「中英夾雜」頁一致（chill 港式唸法近似 ciu1）
+    const chill = w.slang.find(s => s.hanzi === '好chill');
+    if (chill) { chill.jyutping = 'hou2 chill'; chill.note = chill.note.replace(/；?$/, '；chill 港式唸法近似 ciu1'); }
   }
 };
 

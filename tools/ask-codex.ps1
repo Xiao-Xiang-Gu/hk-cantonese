@@ -3,6 +3,9 @@
 #   .\tools\ask-codex.ps1 -Prompt "你的問題"
 #   Get-Content prompt.txt -Raw | .\tools\ask-codex.ps1
 param([string]$Prompt)
+# Codex 輸出 UTF-8；不設定的話，背景工作會用 Big5 解碼造成亂碼
+[Console]::OutputEncoding = [Text.Encoding]::UTF8
+$OutputEncoding = [Text.Encoding]::UTF8
 
 if (-not $Prompt) { $Prompt = ($input | Out-String) }
 if (-not $Prompt.Trim()) { Write-Error "請提供提示內容"; exit 1 }

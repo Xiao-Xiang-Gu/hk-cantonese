@@ -11,7 +11,7 @@ const fix = (id, hanziStart, patch) => {
 };
 // Claude 審稿修正
 fix('dinner-at-home', '得喇。阿妹', { jyutping: 'dak1 laa3. aa3 mui1, nei5 gam1 jat6 faan1 hok6 dim2 aa3?' });
-fix('office-pantry', '咁你聽日仲放唔放假', { jyutping: 'gam2 nei5 ting1 jat6 zung6 fong3 m4 fong3 gaa3?' });
+fix('office-pantry', '咁你聽日仲放唔放假', { jyutping: 'gam2 nei5 ting1 jat6 zung6 fong3 m4 fong3 gaa3 gaa3?' });
 fix('mall-shopping', '吓？減咗都要', { hanzi: '吓？減咗都要兩百八呀？', mandarin: '蛤？降價了還要兩百八喔？' });
 fix('piglet-and-kitten', '咁我哋睇餐牌', { jyutping: 'gam2 ngo5 dei6 tai2 caan1 paai2 sin1 laa1.' });
 fix('piglet-and-kitten', '食呀！佢又冇', { mandarin: '要啊！他又沒叫我的名字。' });
